@@ -1,6 +1,9 @@
+import com.android.build.api.dsl.BuildType
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -21,12 +24,23 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        val commonConfig: BuildType.() -> Unit = {
+            enableUnitTestCoverage = true
+            isShrinkResources = true
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            commonConfig()
+            isDebuggable = true
+            buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
+            buildConfigField("String", "TMDB_API_TOKEN", "\"${project.properties["TMDB_API_TOKEN"]}\"")
+        }
+        release {
+            commonConfig()
         }
     }
     compileOptions {
@@ -60,6 +74,11 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.serialization)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
