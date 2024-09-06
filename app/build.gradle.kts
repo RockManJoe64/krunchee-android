@@ -21,10 +21,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-    }
 
-    buildFeatures {
-        buildConfig = true
+        buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
+        buildConfigField("String", "TMDB_API_TOKEN", "\"${project.properties["TMDB_API_TOKEN"]}\"")
     }
 
     buildTypes {
@@ -39,8 +38,6 @@ android {
         }
         release {
             commonConfig()
-            buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
-            buildConfigField("String", "TMDB_API_TOKEN", "\"${project.properties["TMDB_API_TOKEN"]}\"")
         }
     }
     compileOptions {
@@ -52,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -79,6 +77,10 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotest.properties)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
