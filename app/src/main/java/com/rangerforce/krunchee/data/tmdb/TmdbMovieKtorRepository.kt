@@ -7,9 +7,10 @@ import io.ktor.client.plugins.RedirectResponseException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.http.headers
 import io.ktor.http.path
 
-class TmdbMovieKtorRepository(private val client: HttpClient) : TmdbMovieRepository {
+class TmdbMovieKtorRepository(private val client: HttpClient, private val apiConfig: TmdbApiConfig) : TmdbMovieRepository {
     override suspend fun getPopularMovies(
         page: Int,
         language: String,
@@ -17,6 +18,10 @@ class TmdbMovieKtorRepository(private val client: HttpClient) : TmdbMovieReposit
     ): PagedResponse<MovieDetail> {
         return try {
             client.get {
+                headers {
+                    append("Authorization", "Bearer ${apiConfig.apiToken}")
+                    append("Content-Type", "application/json")
+                }
                 url {
                     path(HttpRoutes.POPULAR_MOVIES)
                     parameter("page", page)
