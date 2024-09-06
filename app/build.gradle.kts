@@ -23,6 +23,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         val commonConfig: BuildType.() -> Unit = {
             enableUnitTestCoverage = true
@@ -33,14 +37,10 @@ android {
                 "proguard-rules.pro"
             )
         }
-        debug {
-            commonConfig()
-            isDebuggable = true
-            buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
-            buildConfigField("String", "TMDB_API_TOKEN", "\"${project.properties["TMDB_API_TOKEN"]}\"")
-        }
         release {
             commonConfig()
+            buildConfigField("String", "TMDB_API_KEY", "\"${project.properties["TMDB_API_KEY"]}\"")
+            buildConfigField("String", "TMDB_API_TOKEN", "\"${project.properties["TMDB_API_TOKEN"]}\"")
         }
     }
     compileOptions {
@@ -64,7 +64,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
