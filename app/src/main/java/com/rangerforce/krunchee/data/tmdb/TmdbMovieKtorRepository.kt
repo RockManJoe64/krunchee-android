@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.RedirectResponseException
 import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.HttpStatusCode
@@ -20,6 +21,9 @@ class TmdbMovieKtorRepository(private val client: HttpClient, private val apiCon
     ): PagedResponse<MovieDetail> {
         return try {
             client.get {
+                // Enables throwing exceptions on non 2xx responses
+                // See for more info: https://ktor.io/docs/client-response-validation.html#default
+                expectSuccess = true
                 headers {
                     append("Accept", "application/json")
                     append("Authorization", "Bearer ${apiConfig.apiToken}")
@@ -32,9 +36,6 @@ class TmdbMovieKtorRepository(private val client: HttpClient, private val apiCon
                     parameter("region", region)
                 }
             }.body<PagedResponse<MovieDetail>>()
-        } catch (e: ContentConvertException) {
-            // TODO avoid this exception
-            throw TmdbApiException("Failed to get popular movies due to empty body", e)
         } catch (e: RedirectResponseException) {
             throw TmdbApiException("Failed to get popular movies", e)
         } catch (e: ClientRequestException) {
@@ -42,10 +43,13 @@ class TmdbMovieKtorRepository(private val client: HttpClient, private val apiCon
                 HttpStatusCode.BadRequest -> throw TmdbApiException("Failed to get popular movies due to bad request", e)
                 HttpStatusCode.Unauthorized -> throw TmdbApiException("Failed to get popular movies due to unauthorized", e)
                 HttpStatusCode.NotFound -> throw TmdbApiException("Failed to get popular movies due to not found", e)
-                else -> throw TmdbApiException("Failed to get popular movies", e)
+                else -> throw TmdbApiException("Failed to get popular movies due to client request", e)
             }
         } catch (e: ServerResponseException) {
-            throw TmdbApiException("Failed to get popular movies", e)
+            throw TmdbApiException("Failed to get popular movies due to server error", e)
+        } catch (e: ContentConvertException) {
+            // This means we expected a response body but it was empty
+            throw TmdbApiException("Failed to get popular movies due to empty body", e)
         }
     }
 }
