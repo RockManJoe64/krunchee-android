@@ -13,6 +13,6 @@ data class MovieDetail(
     @SerialName("release_date") val releaseDate: String,
     @SerialName("vote_average") val voteAverage: Float,
     @SerialName("vote_count") val voteCount: Int,
-    val popularity: UInt,
-    val genreIds: List<UInt>,
+    val popularity: Float,
+    @SerialName("genre_ids") val genreIds: List<UInt>,
 )
