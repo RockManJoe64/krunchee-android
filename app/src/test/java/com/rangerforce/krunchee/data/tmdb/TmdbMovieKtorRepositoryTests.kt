@@ -2,6 +2,8 @@ package com.rangerforce.krunchee.data.tmdb
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -102,11 +104,36 @@ class TmdbMovieKtorRepositoryTests : StringSpec({
         response.results[0].releaseDate shouldBe "2024-07-24"
     }
 
-    "given a 400 error when getPopularMovies should then throw client request exception" {
+    "given a 4xx error when getPopularMovies should then throw client request exception" {
+        forAll(
+            row(HttpStatusCode.BadRequest, "Failed to get popular movies due to bad request"),
+            row(HttpStatusCode.Unauthorized, "Failed to get popular movies due to unauthorized"),
+            row(HttpStatusCode.NotFound, "Failed to get popular movies due to not found"),
+            row(HttpStatusCode.MethodNotAllowed, "Failed to get popular movies due to client request"),
+        ) { status, expectedMessage ->
+            val client = createMockClient { _ ->
+                respond(
+                    content = ByteReadChannel(""),
+                    status = status,
+                    headers = headersOf("Content-Type" to listOf("application/json"))
+                )
+            }
+
+            val repository = TmdbMovieKtorRepository(client, TmdbApiConfig)
+
+            val exception = shouldThrow<TmdbApiException> {
+                runBlocking { repository.getPopularMovies(1, "en-US", "US") }
+            }
+
+            exception.message shouldBe expectedMessage
+        }
+    }
+
+    "given a 500 error when getPopularMovies should then throw client request exception" {
         val client = createMockClient { _ ->
             respond(
                 content = ByteReadChannel(""),
-                status = HttpStatusCode.BadRequest,
+                status = HttpStatusCode.InternalServerError,
                 headers = headersOf("Content-Type" to listOf("application/json"))
             )
         }
@@ -117,6 +144,6 @@ class TmdbMovieKtorRepositoryTests : StringSpec({
             runBlocking { repository.getPopularMovies(1, "en-US", "US") }
         }
 
-        exception.message shouldBe "Failed to get popular movies due to bad request"
+        exception.message shouldBe "Failed to get popular movies due to server error"
     }
 })

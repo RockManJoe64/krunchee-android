@@ -81,9 +81,10 @@ dependencies {
     implementation(libs.logback.classic) // For Ktor logging
     testImplementation(libs.junit)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.kotest.runner.junit5)
     testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotest.framework.datatest)
     testImplementation(libs.kotest.properties)
+    testImplementation(libs.kotest.runner.junit5)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
